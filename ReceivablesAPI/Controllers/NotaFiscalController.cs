@@ -1,4 +1,4 @@
-﻿using Application.DTOs.Requests;
+using Application.DTOs.Requests;
 using Application.Services;
 using Application.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -19,25 +19,49 @@ namespace ReceivablesAPI.Controllers
         [HttpGet("obter-todas")]
         public async Task<IActionResult> ObterTodasNotasFiscais()
         {
-            var response = await _notaFiscalService.ObterTodasNotasFiscais();
+            try
+            {
+                var response = await _notaFiscalService.ObterTodasNotasFiscais();
 
-            return Ok(response);
+                return Ok(response);
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+
         }
 
         [HttpGet("obter-todas-cnpj")]
         public async Task<IActionResult> ObterTodasNotasFiscaisPorCNPJ(string cnpj)
         {
-            var response = await _notaFiscalService.ObterTodasNotasFiscaisPorCNPJ(cnpj);
+            try
+            {
+                var response = await _notaFiscalService.ObterTodasNotasFiscaisPorCNPJ(cnpj);
 
-            return Ok(response);
+                return Ok(response);
+            }
+            catch
+            {
+                return BadRequest();
+            }
+
         }
 
         [HttpPost("inserir-nota-fiscal")]
         public async Task<IActionResult> InserirNotaFiscal(CriarNotaFiscalRequest notafiscal)
         {
-            var response = await _notaFiscalService.InserirNotaFiscal(notafiscal);
+            try
+            {
+                var response = await _notaFiscalService.InserirNotaFiscal(notafiscal);
 
-            return Ok(response);
+                return Ok(response);
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+
         }
     }
 }
