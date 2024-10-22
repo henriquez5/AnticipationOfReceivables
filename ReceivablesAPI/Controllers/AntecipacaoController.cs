@@ -1,4 +1,4 @@
-﻿using Application.DTOs.Requests;
+using Application.DTOs.Requests;
 using Application.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,9 +18,16 @@ namespace ReceivablesAPI.Controllers
         [HttpPost("calcular")]
         public async Task<IActionResult> CalcularAntecipacao(string cnpj)
         {
-            var response = await _antecipacaoService.CalcularAntecipacao(cnpj);
+            try
+            {
+                var response = await _antecipacaoService.CalcularAntecipacao(cnpj);
 
-            return Ok(response);
+                return Ok(response);
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
         }
     }
 }
