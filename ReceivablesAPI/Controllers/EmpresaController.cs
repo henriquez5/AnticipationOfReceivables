@@ -1,4 +1,4 @@
-﻿using Application.DTOs.Requests;
+using Application.DTOs.Requests;
 using Application.DTOs.Responses;
 using Application.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -19,25 +19,46 @@ namespace ReceivablesAPI.Controllers
         [HttpGet("obter-todas")]
         public async Task<IActionResult> ObterTodasEmpresas()
         {
-            var response = await _empresaService.ObterTodasEmpresas();
+            try
+            {
+                var response = await _empresaService.ObterTodasEmpresas();
 
-            return Ok(response);
+                return Ok(response);
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
         }
 
         [HttpGet("obter-todas-id")]
         public async Task<IActionResult> ObterEmpresaPorId(int id)
         {
-            var response = await _empresaService.ObterEmpresaPorId(id);
+            try
+            {
+                var response = await _empresaService.ObterEmpresaPorId(id);
 
-            return Ok(response);
+                return Ok(response);
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
         }
 
         [HttpPost("inserir-empresa")]
         public async Task<IActionResult> InserirEmpresa(CriarEmpresaRequest criarEmpresa)
         {
-            var response = await _empresaService.InserirEmpresa(criarEmpresa);
+            try
+            {
+                var response = await _empresaService.InserirEmpresa(criarEmpresa);
 
-            return Ok(response);
+                return Ok(response);
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
         }
     }
 }
