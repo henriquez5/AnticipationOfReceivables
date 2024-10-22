@@ -29,7 +29,8 @@ namespace Application.Services
                     Numero = nf.Numero,
                     Valor = nf.Valor,
                     DataVencimento = nf.DataVencimento,
-
+                    EmpresaId = nf.EmpresaId,
+                    ValorBruto = nf.Valor
                 }).ToList();
 
                 return notasFiscais;
@@ -57,7 +58,8 @@ namespace Application.Services
                     Numero = nf.Numero,
                     Valor = nf.Valor,
                     DataVencimento = nf.DataVencimento,
-                    
+                    EmpresaId = nf.EmpresaId,
+                    ValorBruto = nf.Valor
                 }).ToList();
 
                 return notasFiscais;
@@ -70,33 +72,39 @@ namespace Application.Services
 
         public async Task<ConsultaNotaFiscalResponse> InserirNotaFiscal(CriarNotaFiscalRequest input)
         {
-            var empresa = await _empresaRepository.ObterEmpresaPorCNPJ(input.Cnpj);
-
-            if(empresa == null)
-                throw new KeyNotFoundException($"Empresa com CNPJ: {input.Cnpj} não foi encontrado.");
-
-            var newNotaFiscal = new NotaFiscal
+            try
             {
-                Cnpj = empresa.CNPJ,
-                Numero = input.Numero,
-                Valor = input.Valor,
-                DataVencimento = input.DataVencimento,
+                var empresa = await _empresaRepository.ObterEmpresaPorCNPJ(input.Cnpj);
 
-                EmpresaId = empresa.Id
-            };
+                if (empresa == null)
+                    throw new KeyNotFoundException($"Empresa com CNPJ: {input.Cnpj} não foi encontrado.");
 
-            var nf = await _notaFiscalRepository.InserirNotaFiscal(newNotaFiscal);
+                var newNotaFiscal = new NotaFiscal
+                {
+                    Cnpj = empresa.CNPJ,
+                    Numero = input.Numero,
+                    Valor = input.Valor,
+                    DataVencimento = input.DataVencimento,
 
-            return new ConsultaNotaFiscalResponse
+                    EmpresaId = empresa.Id
+                };
+
+                var nf = await _notaFiscalRepository.InserirNotaFiscal(newNotaFiscal);
+
+                return new ConsultaNotaFiscalResponse
+                {
+                    Cnpj = nf.Empresa.CNPJ,
+                    Numero = nf.Numero,
+                    Valor = nf.Valor,
+                    DataVencimento = nf.DataVencimento,
+                    EmpresaId = nf.Empresa.Id,
+                    ValorBruto = nf.Valor
+                };
+            }
+            catch(Exception)
             {
-                Cnpj = nf.Empresa.CNPJ,
-                Numero = nf.Numero,
-                Valor = nf.Valor,
-                DataVencimento = nf.DataVencimento,
-                EmpresaId = nf.Empresa.Id,
-                ValorBruto = nf.Valor
-            };
-
+                throw;
+            }
         }
     }
 }
