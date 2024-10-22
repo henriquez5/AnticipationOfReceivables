@@ -1,4 +1,4 @@
-﻿using Application.Services.Interfaces;
+using Application.Services.Interfaces;
 using Application.DTOs.Requests;
 using Application.DTOs.Responses;
 using Infrastructure.Repository.Interfaces;
@@ -23,9 +23,12 @@ namespace Application.Services
 
                 var listaEmpresas = empresas.Select(em => new ConsultaEmpresaResponse
                 {
+                    Id = em.Id,
                     CNPJ = em.CNPJ,
                     Ramo = em.Ramo,
-                    Nome = em.Nome
+                    Nome = em.Nome,
+                    FaturamentoMensal = em.FaturamentoMensal,
+                    Limite = em.Limite
                 }).ToList();
 
                 return listaEmpresas;
@@ -49,9 +52,12 @@ namespace Application.Services
 
                 return new ConsultaEmpresaResponse
                 {
+                    Id = empresa.Id,
                     CNPJ = empresa.CNPJ,
+                    Ramo = empresa.Ramo,
                     Nome = empresa.Nome,
-                    Ramo = empresa.Ramo
+                    FaturamentoMensal = empresa.FaturamentoMensal,
+                    Limite = empresa.Limite
                 };
             }
             catch(Exception)
@@ -73,9 +79,12 @@ namespace Application.Services
 
                 return new ConsultaEmpresaResponse
                 {
+                    Id = empresa.Id,
                     CNPJ = empresa.CNPJ,
+                    Ramo = empresa.Ramo,
                     Nome = empresa.Nome,
-                    Ramo = empresa.Ramo
+                    FaturamentoMensal = empresa.FaturamentoMensal,
+                    Limite = empresa.Limite
                 };
             }
             catch (Exception)
