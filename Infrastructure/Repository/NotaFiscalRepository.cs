@@ -30,7 +30,7 @@ namespace Infrastructure.Repository
         {
             return await _context.NotaFiscal
                 .Include(x => x.Empresa)
-                .Where(nf => nf.Cnpj.Contains(cnpj))
+                .Where(nf => nf.Cnpj == cnpj)
                 .ToListAsync();
         }
 
