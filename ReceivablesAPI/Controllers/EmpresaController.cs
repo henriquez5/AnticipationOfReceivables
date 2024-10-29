@@ -1,5 +1,4 @@
 using Application.DTOs.Requests;
-using Application.DTOs.Responses;
 using Application.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -25,13 +24,14 @@ namespace ReceivablesAPI.Controllers
 
                 return Ok(response);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return BadRequest();
+                return StatusCode(500, new { mensagem = "Erro interno ao processar a solicitação.", detalhe = ex.Message });
             }
+
         }
 
-        [HttpGet("obter-todas-id")]
+        [HttpGet("obter-por-id")]
         public async Task<IActionResult> ObterEmpresaPorId(int id)
         {
             try
@@ -40,9 +40,9 @@ namespace ReceivablesAPI.Controllers
 
                 return Ok(response);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return BadRequest();
+                return StatusCode(500, new { mensagem = "Erro interno ao processar a solicitação.", detalhe = ex.Message });
             }
         }
 
@@ -55,9 +55,13 @@ namespace ReceivablesAPI.Controllers
 
                 return Ok(response);
             }
-            catch (Exception)
+            catch (ArgumentException ex)
             {
-                return BadRequest();
+                return NotFound(new { mensagem = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensagem = "Erro interno ao processar a solicitação.", detalhe = ex.Message });
             }
         }
     }
