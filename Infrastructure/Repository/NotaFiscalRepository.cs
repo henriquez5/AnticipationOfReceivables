@@ -1,4 +1,4 @@
-﻿using Domain.Entities;
+using Domain.Entities;
 using Infrastructure.Database;
 using Infrastructure.Repository.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -17,21 +17,27 @@ namespace Infrastructure.Repository
         public async Task<List<NotaFiscal>> ObterTodasNotasFiscais()
         {
             return await _context.NotaFiscal
-                .Include(x => x.Empresa)
-                .ToListAsync();
+                    .Include(x => x.Empresa)
+                    .ToListAsync() ?? new List<NotaFiscal>();
         }
 
-        public async Task<NotaFiscal> ObterNotaFiscalPorId(int id)
+        public async Task<NotaFiscal?> ObterNotaFiscalPorId(int id)
         {
-            return await _context.NotaFiscal.FindAsync(id);
+            var notaFiscal = await _context.NotaFiscal.FindAsync(id);
+
+            if (notaFiscal == null) return null;
+
+            return notaFiscal;
         }
 
         public async Task<List<NotaFiscal>> ObterTodasNotasFiscaisPorCNPJ(string cnpj)
         {
-            return await _context.NotaFiscal
+            var notasFiscais = await _context.NotaFiscal
                 .Include(x => x.Empresa)
                 .Where(nf => nf.Cnpj == cnpj)
                 .ToListAsync();
+
+            return notasFiscais;
         }
 
         public async Task<NotaFiscal> InserirNotaFiscal(NotaFiscal input)
@@ -49,7 +55,7 @@ namespace Infrastructure.Repository
             }
         }
 
-        public async Task DeletarNotaFiscal(int id)
+        public async Task<bool> DeletarNotaFiscal(int id)
         {
             try
             {
@@ -58,6 +64,11 @@ namespace Infrastructure.Repository
                 {
                     _context.NotaFiscal.Remove(notaFiscal);
                     await _context.SaveChangesAsync();
+                    return true;
+                }
+                else
+                {
+                    return false;
                 }
             }
             catch (Exception)
