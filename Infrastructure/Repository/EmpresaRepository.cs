@@ -1,4 +1,4 @@
-﻿using Domain.Entities;
+using Domain.Entities;
 using Infrastructure.Database;
 using Infrastructure.Repository.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -24,10 +24,12 @@ namespace Infrastructure.Repository
             return await _context.Empresa.FindAsync(id);
         }
 
-        public async Task<Empresa> ObterEmpresaPorCNPJ(string cnpj)
+        public async Task<Empresa?> ObterEmpresaPorCNPJ(string cnpj)
         {
-            return await _context.Empresa
-                .Where(em => em.CNPJ.Contains(cnpj)).FirstAsync();
+            var empresa = await _context.Empresa
+                .Where(em => em.CNPJ == cnpj).FirstOrDefaultAsync();
+
+            return empresa;
         }
 
         public async Task<Empresa> InserirEmpresa(Empresa input)
