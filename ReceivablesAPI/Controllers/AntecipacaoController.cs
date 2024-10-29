@@ -24,10 +24,15 @@ namespace ReceivablesAPI.Controllers
 
                 return Ok(response);
             }
-            catch (Exception)
+            catch (InvalidOperationException ex)
             {
-                return BadRequest();
+                return NotFound(new { mensagem = ex.Message });
             }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensagem = "Erro interno ao processar a solicitação.", detalhe = ex.Message });
+            }
+            
         }
     }
 }
