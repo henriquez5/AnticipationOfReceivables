@@ -1,4 +1,4 @@
-﻿namespace Application.DTOs.Responses
+namespace Application.DTOs.Responses
 {
     public class CalcularAntecipacaoResponse
     {
