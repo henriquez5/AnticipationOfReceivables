@@ -1,4 +1,4 @@
-﻿using Application.DTOs.Responses;
+using Application.DTOs.Responses;
 using Application.Services.Interfaces;
 using Domain.Entities;
 using Infrastructure.Repository.Interfaces;
@@ -18,6 +18,11 @@ namespace Application.Services
 
         public async Task<CalcularAntecipacaoResponse> CalcularAntecipacao(string cnpj)
         {
+            if (!System.Text.RegularExpressions.Regex.IsMatch(cnpj, @"^\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}$"))
+            {
+                throw new FormatException("O CNPJ deve estar no formato 00.000.000/0000-00.");
+            }
+
             var empresa = await _empresaRepository.ObterEmpresaPorCNPJ(cnpj);
             if (empresa == null)
             {
@@ -51,6 +56,10 @@ namespace Application.Services
             }
 
             response.TotalBruto = Math.Round(notasFiscais.Sum(nf => nf.Valor), 2);
+
+            if (response.TotalBruto > empresa.Limite)
+                throw new InvalidOperationException($"Operação não permitida pois o valor total das NF : {response.TotalBruto} , ultrapassa o limite da empresa {empresa.Limite}");
+
             response.TotalLiquido = Math.Round(notasFiscais.Sum(CalcularValorLiquido), 2);
 
             return response;
