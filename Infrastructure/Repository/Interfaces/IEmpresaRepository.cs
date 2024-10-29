@@ -1,4 +1,4 @@
-﻿using Domain.Entities;
+using Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +13,7 @@ namespace Infrastructure.Repository.Interfaces
 
         Task<Empresa> ObterEmpresaPorId(int id);
 
-        Task<Empresa> ObterEmpresaPorCNPJ(string cnpj);
+        Task<Empresa?> ObterEmpresaPorCNPJ(string cnpj);
 
         Task<Empresa> InserirEmpresa(Empresa input);
 
