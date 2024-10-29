@@ -1,4 +1,4 @@
-﻿using Application.DTOs.Requests;
+using Application.DTOs.Requests;
 using Application.DTOs.Responses;
 using Application.Services.Interfaces;
 using Domain.Entities;
@@ -19,37 +19,33 @@ namespace Application.Services
 
         public async Task<List<ConsultaNotaFiscalResponse>> ObterTodasNotasFiscais()
         {
-            try
-            {
-                var obterNotasFiscais = await _notaFiscalRepository.ObterTodasNotasFiscais();
+               var obterNotasFiscais = await _notaFiscalRepository.ObterTodasNotasFiscais();
 
-                var notasFiscais = obterNotasFiscais.Select(nf => new ConsultaNotaFiscalResponse
+                // Mapear as notas fiscais para a resposta
+                return obterNotasFiscais.Select(nf => new ConsultaNotaFiscalResponse
                 {
                     Cnpj = nf.Empresa.CNPJ,
                     Numero = nf.Numero,
                     Valor = nf.Valor,
                     DataVencimento = nf.DataVencimento,
                     EmpresaId = nf.EmpresaId,
-                    ValorBruto = nf.Valor
                 }).ToList();
-
-                return notasFiscais;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
         }
 
         public async Task<List<ConsultaNotaFiscalResponse>> ObterTodasNotasFiscaisPorCNPJ(string cnpj)
         {
             try
             {
+                if (!System.Text.RegularExpressions.Regex.IsMatch(cnpj, @"^\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}$"))
+                {
+                    throw new FormatException("O CNPJ deve estar no formato 00.000.000/0000-00.");
+                }
+
                 var obterNotasFiscais = await _notaFiscalRepository.ObterTodasNotasFiscaisPorCNPJ(cnpj);
 
                 if (obterNotasFiscais == null || !obterNotasFiscais.Any())
                 {
-                    throw new KeyNotFoundException($"NotaFiscal com CNPJ: {cnpj} não foi encontrado.");
+                    throw new KeyNotFoundException($"NotaFiscal com CNPJ: {cnpj} não foi encontrada.");
                 }
 
                 var notasFiscais = obterNotasFiscais.Select(nf => new ConsultaNotaFiscalResponse
@@ -58,8 +54,7 @@ namespace Application.Services
                     Numero = nf.Numero,
                     Valor = nf.Valor,
                     DataVencimento = nf.DataVencimento,
-                    EmpresaId = nf.EmpresaId,
-                    ValorBruto = nf.Valor
+                    EmpresaId = nf.EmpresaId
                 }).ToList();
 
                 return notasFiscais;
@@ -72,34 +67,48 @@ namespace Application.Services
 
         public async Task<ConsultaNotaFiscalResponse> InserirNotaFiscal(CriarNotaFiscalRequest input)
         {
+            if (!System.Text.RegularExpressions.Regex.IsMatch(input.Cnpj, @"^\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}$"))
+            {
+                throw new FormatException("O CNPJ deve estar no formato 00.000.000/0000-00.");
+            }
+
+            var empresa = await _empresaRepository.ObterEmpresaPorCNPJ(input.Cnpj);
+
+            if(empresa == null)
+                throw new KeyNotFoundException($"Empresa com CNPJ: {input.Cnpj} não foi encontrado.");
+
+            var newNotaFiscal = new NotaFiscal
+            {
+                Cnpj = empresa.CNPJ,
+                Numero = input.Numero,
+                Valor = input.Valor,
+                DataVencimento = input.DataVencimento,
+
+                EmpresaId = empresa.Id
+            };
+
+            var nf = await _notaFiscalRepository.InserirNotaFiscal(newNotaFiscal);
+
+            return new ConsultaNotaFiscalResponse
+            {
+                Cnpj = nf.Empresa.CNPJ,
+                Numero = nf.Numero,
+                Valor = nf.Valor,
+                DataVencimento = nf.DataVencimento,
+                EmpresaId = nf.Empresa.Id
+            };
+
+        }
+
+        public async Task<bool> DeletarNotaFiscal(int id)
+        {
             try
             {
-                var empresa = await _empresaRepository.ObterEmpresaPorCNPJ(input.Cnpj);
+                var excludeNota = await _notaFiscalRepository.DeletarNotaFiscal(id);
 
-                if (empresa == null)
-                    throw new KeyNotFoundException($"Empresa com CNPJ: {input.Cnpj} não foi encontrado.");
+                if (excludeNota == false) throw new KeyNotFoundException("Nota fiscal não encontrada para exclusão.");
 
-                var newNotaFiscal = new NotaFiscal
-                {
-                    Cnpj = empresa.CNPJ,
-                    Numero = input.Numero,
-                    Valor = input.Valor,
-                    DataVencimento = input.DataVencimento,
-
-                    EmpresaId = empresa.Id
-                };
-
-                var nf = await _notaFiscalRepository.InserirNotaFiscal(newNotaFiscal);
-
-                return new ConsultaNotaFiscalResponse
-                {
-                    Cnpj = nf.Empresa.CNPJ,
-                    Numero = nf.Numero,
-                    Valor = nf.Valor,
-                    DataVencimento = nf.DataVencimento,
-                    EmpresaId = nf.Empresa.Id,
-                    ValorBruto = nf.Valor
-                };
+                return true;
             }
             catch(Exception)
             {
