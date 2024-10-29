@@ -1,4 +1,4 @@
-﻿namespace Application.DTOs.Responses
+namespace Application.DTOs.Responses
 {
     public class ConsultaNotaFiscalResponse
     {
@@ -11,7 +11,5 @@
         public DateTime DataVencimento { get; set; }
 
         public int? EmpresaId { get; set; }
-
-        public decimal ValorBruto { get; set; }
     }
 }
