@@ -3,6 +3,7 @@ using Application.DTOs.Requests;
 using Application.DTOs.Responses;
 using Infrastructure.Repository.Interfaces;
 using Domain.Entities;
+using Domain.Enums;
 
 namespace Application.Services
 {
@@ -25,9 +26,9 @@ namespace Application.Services
                 {
                     Id = em.Id,
                     CNPJ = em.CNPJ,
-                    Ramo = em.Ramo,
-                    Nome = em.Nome,
+                    Ramo = em.Ramo.ToString(),
                     FaturamentoMensal = em.FaturamentoMensal,
+                    Nome = em.Nome,
                     Limite = em.Limite
                 }).ToList();
 
@@ -54,9 +55,9 @@ namespace Application.Services
                 {
                     Id = empresa.Id,
                     CNPJ = empresa.CNPJ,
-                    Ramo = empresa.Ramo,
-                    Nome = empresa.Nome,
+                    Ramo = empresa.Ramo.ToString(),
                     FaturamentoMensal = empresa.FaturamentoMensal,
+                    Nome = empresa.Nome,
                     Limite = empresa.Limite
                 };
             }
@@ -70,6 +71,11 @@ namespace Application.Services
         {
             try
             {
+                if (!System.Text.RegularExpressions.Regex.IsMatch(cnpj, @"^\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}$"))
+                {
+                    throw new FormatException("O CNPJ deve estar no formato 00.000.000/0000-00.");
+                }
+
                 var empresa = await _empresaRepository.ObterEmpresaPorCNPJ(cnpj);
 
                 if (empresa == null)
@@ -79,12 +85,9 @@ namespace Application.Services
 
                 return new ConsultaEmpresaResponse
                 {
-                    Id = empresa.Id,
                     CNPJ = empresa.CNPJ,
-                    Ramo = empresa.Ramo,
                     Nome = empresa.Nome,
-                    FaturamentoMensal = empresa.FaturamentoMensal,
-                    Limite = empresa.Limite
+                    Ramo = empresa.Ramo.ToString()
                 };
             }
             catch (Exception)
@@ -95,13 +98,23 @@ namespace Application.Services
 
         public async Task<ConsultaEmpresaResponse> InserirEmpresa(CriarEmpresaRequest input)
         {
+            if (!Enum.TryParse<RamoEmpresa>(input.Ramo, true, out var ramoEmpresa))
+            {
+                throw new ArgumentException("O ramo deve ser 'Serviços' ou 'Produtos'.");
+            }
+
+            var empresaExiste = await _empresaRepository.ObterEmpresaPorCNPJ(input.CNPJ);
+
+            if (empresaExiste != null)
+                throw new InvalidOperationException("Empresa com CNPJ informado já existe");
+
             var newEmpresa = new Empresa
             {
                 CNPJ = input.CNPJ,
                 Nome = input.Nome,
-                Ramo = input.Ramo,
+                Ramo = ramoEmpresa,
                 FaturamentoMensal = input.FaturamentoMensal,
-                Limite = CalcularLimite(input.FaturamentoMensal,input.Ramo)
+                Limite = CalcularLimite(input.FaturamentoMensal, ramoEmpresa)
             };
 
             var empresa = await _empresaRepository.InserirEmpresa(newEmpresa);
@@ -111,15 +124,15 @@ namespace Application.Services
                 Id = empresa.Id,
                 CNPJ = empresa.CNPJ,
                 Nome = empresa.Nome,
-                Ramo = empresa.Ramo,
+                Ramo = empresa.Ramo.ToString(),
                 Limite= empresa.Limite,
                 FaturamentoMensal = empresa.FaturamentoMensal
             };
         }
 
-        public decimal CalcularLimite(decimal FaturamentoMensal, string Ramo)
+        public decimal CalcularLimite(decimal FaturamentoMensal, RamoEmpresa Ramo)
         {
-            decimal Limite = 0; 
+            decimal Limite = 0;
 
             if (FaturamentoMensal >= 10000 && FaturamentoMensal <= 50000)
             {
@@ -127,11 +140,11 @@ namespace Application.Services
             }
             else if (FaturamentoMensal > 50000 && FaturamentoMensal <= 100000)
             {
-                Limite = Ramo == "Serviços" ? FaturamentoMensal * 0.55m : FaturamentoMensal * 0.60m;
+                Limite = Ramo == RamoEmpresa.Serviços ? FaturamentoMensal * 0.55m : FaturamentoMensal * 0.60m;
             }
             else if (FaturamentoMensal > 100000)
             {
-                Limite = Ramo == "Serviços" ? FaturamentoMensal * 0.60m : FaturamentoMensal * 0.65m;
+                Limite = Ramo == RamoEmpresa.Serviços ? FaturamentoMensal * 0.60m : FaturamentoMensal * 0.65m;
             }
 
             return Limite;
