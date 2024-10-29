@@ -1,4 +1,4 @@
-﻿using Application.DTOs.Responses;
+using Application.DTOs.Responses;
 using Application.DTOs.Requests;
 
 namespace Application.Services.Interfaces
@@ -10,6 +10,8 @@ namespace Application.Services.Interfaces
         Task<List<ConsultaNotaFiscalResponse>> ObterTodasNotasFiscaisPorCNPJ(string cnpj);
 
         Task<ConsultaNotaFiscalResponse> InserirNotaFiscal(CriarNotaFiscalRequest input);
+
+        Task<bool> DeletarNotaFiscal(int id);
 
     }
 }
