@@ -24,6 +24,7 @@ namespace Application.Services
                 // Mapear as notas fiscais para a resposta
                 return obterNotasFiscais.Select(nf => new ConsultaNotaFiscalResponse
                 {
+                    Id = nf.Id,
                     Cnpj = nf.Empresa.CNPJ,
                     Numero = nf.Numero,
                     Valor = nf.Valor,
@@ -50,6 +51,7 @@ namespace Application.Services
 
                 var notasFiscais = obterNotasFiscais.Select(nf => new ConsultaNotaFiscalResponse
                 {
+                    Id = nf.Id,
                     Cnpj = nf.Empresa.CNPJ,
                     Numero = nf.Numero,
                     Valor = nf.Valor,
@@ -77,6 +79,11 @@ namespace Application.Services
             if(empresa == null)
                 throw new KeyNotFoundException($"Empresa com CNPJ: {input.Cnpj} não foi encontrado.");
 
+            if (input.DataVencimento <= DateTime.Now)
+            {
+                throw new ArgumentException("A data de vencimento não pode ser menor que a data atual.");
+            }
+
             var newNotaFiscal = new NotaFiscal
             {
                 Cnpj = empresa.CNPJ,
@@ -91,6 +98,7 @@ namespace Application.Services
 
             return new ConsultaNotaFiscalResponse
             {
+                Id= nf.Id,
                 Cnpj = nf.Empresa.CNPJ,
                 Numero = nf.Numero,
                 Valor = nf.Valor,
